@@ -1,8 +1,7 @@
 import CategoryItem from "@/components/CategoryItem";
-import ProfileHeader from "@/components/ProfileHeader";
 import TechnicianCard from "@/components/TechnicianCard";
 import React, { useState } from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 const categories = [
   { id: 1, name: "Kelistrikan", icon: require("@/assets/icons/electric.png") },
@@ -43,7 +42,7 @@ const technicians = [
   },
 ];
 
-export default function HomeScreen() {
+export default function SearchScreen() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
 
@@ -55,16 +54,6 @@ export default function HomeScreen() {
 
   return (
     <ScrollView className="flex-1 bg-secondary px-5 pt-16">
-      {/* Header */}
-      <ProfileHeader />
-
-      {/* Banner */}
-      <Image
-        source={require("@/assets/images/banner.png")}
-        className="w-full h-40 rounded-xl mb-5"
-        resizeMode="cover"
-      />
-
       {/* Categories */}
       <Text className="text-2xl font-poppins-medium mb-3">Kategori</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -82,7 +71,23 @@ export default function HomeScreen() {
 
       {/* Best Technicians */}
       <Text className="text-2xl font-poppins-medium mt-6 mb-3">
-        Teknisi Terbaik
+        Teknisi Terdekat
+      </Text>
+
+      <View className="flex-row flex-wrap justify-between">
+        {technicians.map((tech) => (
+          <TechnicianCard
+            key={tech.id}
+            {...tech}
+            isFavorite={favorites.includes(tech.id)}
+            onToggleFavorite={toggleFavorite}
+          />
+        ))}
+      </View>
+
+      {/* Best Technicians */}
+      <Text className="text-2xl font-poppins-medium mt-6 mb-3">
+        Teknisi Tersedia
       </Text>
 
       <View className="flex-row flex-wrap justify-between">

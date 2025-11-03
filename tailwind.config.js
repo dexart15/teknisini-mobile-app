@@ -13,7 +13,7 @@ module.exports = {
         softGrayText: "#A6A6A6",
         grayText: "#515151",
         primary: "#32A4FF",
-        secondary: "#E6F4FF",
+        secondary: "#EBF8FF",
         white: "#FFFFFF",
       },
       fontFamily: {
