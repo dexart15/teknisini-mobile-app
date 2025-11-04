@@ -1,10 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface CategoryItemProps {
   id: number;
   name: string;
-  icon: any;
+  iconName: keyof typeof Ionicons.glyphMap; // nama icon dari Ionicons
   selected: boolean;
   onSelect: (id: number) => void;
 }
@@ -12,7 +13,7 @@ interface CategoryItemProps {
 const CategoryItem: React.FC<CategoryItemProps> = ({
   id,
   name,
-  icon,
+  iconName,
   selected,
   onSelect,
 }) => {
@@ -24,18 +25,16 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     >
       {/* Icon wrapper */}
       <View
-        className={`w-20 h-20 rounded-full justify-center items-center transition-colors duration-200 ${
+        className={`w-20 h-20 rounded-full justify-center items-center ${
           selected
             ? "bg-white border-2 border-primary"
-            : "bg-white border border-gray-300"
+            : "bg-white border border-gray-200"
         }`}
       >
-        <Image
-          source={icon}
-          className={`w-16 h-16 ${
-            selected ? "tint-primary" : "tint-gray-400"
-          }`}
-          resizeMode="contain"
+        <Ionicons
+          name={iconName}
+          size={30}
+          color={selected ? '#32A4FF' : '#A6A6A6'}
         />
       </View>
 

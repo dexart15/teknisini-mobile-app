@@ -13,7 +13,7 @@ export default function FormInput({ placeholder, secureTextEntry }: FormInputPro
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <View className="flex-row items-center bg-white rounded-full px-4 py-3 my-2 shadow-sm border border-gray-200">
+    <View className="flex-row items-center bg-white rounded-full px-4 py-4 my-2 border-2 border-gray-200">
       <TextInput
         placeholder={placeholder}
         secureTextEntry={secureTextEntry && !showPassword}

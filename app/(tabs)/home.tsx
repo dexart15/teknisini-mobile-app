@@ -5,11 +5,11 @@ import React, { useState } from "react";
 import { Image, ScrollView, Text, View } from "react-native";
 
 const categories = [
-  { id: 1, name: "Kelistrikan", icon: require("@/assets/icons/electric.png") },
-  { id: 2, name: "Elektronik", icon: require("@/assets/icons/electronic.png") },
-  { id: 3, name: "Jaringan", icon: require("@/assets/icons/network.png") },
-  { id: 4, name: "Komputer", icon: require("@/assets/icons/computer.png") },
-  { id: 5, name: "Otomotif", icon: require("@/assets/icons/automotive.png") },
+  { id: 1, name: 'Kelistrikan', iconName: 'flash' as const },
+  { id: 2, name: 'Elektronik', iconName: 'tv' as const },
+  { id: 3, name: 'Jaringan', iconName: 'wifi' as const },
+  { id: 4, name: 'Komputer', iconName: 'desktop' as const },
+  { id: 5, name: 'Otomotif', iconName: 'car-sport' as const },
 ];
 
 const technicians = [
@@ -68,14 +68,14 @@ export default function HomeScreen() {
       {/* Categories */}
       <Text className="text-2xl font-poppins-medium mb-3">Kategori</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {categories.map((cat) => (
+        {categories.map((category) => (
           <CategoryItem
-            key={cat.id}
-            id={cat.id}
-            name={cat.name}
-            icon={cat.icon}
-            selected={selectedCategory === cat.id}
-            onSelect={setSelectedCategory}
+          key={category.id}
+          id={category.id}
+          name={category.name}
+          iconName={category.iconName}
+          selected={selectedCategory === category.id}
+          onSelect={setSelectedCategory}
           />
         ))}
       </ScrollView>
