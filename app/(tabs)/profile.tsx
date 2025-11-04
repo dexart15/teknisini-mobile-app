@@ -10,7 +10,7 @@ export default function ProfileScreen() {
       <View className="bg-primary h-48 px-6 flex-row items-center justify-between pt-16">
         <View>
           <Text className="text-white text-xl font-poppins-semibold">
-            Dharma Sukawiyana
+            Asep Mancing Gorgon
           </Text>
           <View className="flex-row items-center mt-1">
             <Ionicons name="location" size={20} color="white" />

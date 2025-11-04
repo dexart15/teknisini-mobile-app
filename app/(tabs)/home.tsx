@@ -1,8 +1,9 @@
+import BannerCarousel from "@/components/BannerCarousel";
 import CategoryItem from "@/components/CategoryItem";
 import ProfileHeader from "@/components/ProfileHeader";
 import TechnicianCard from "@/components/TechnicianCard";
 import React, { useState } from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 const categories = [
   { id: 1, name: 'Kelistrikan', iconName: 'flash' as const },
@@ -58,12 +59,8 @@ export default function HomeScreen() {
       {/* Header */}
       <ProfileHeader />
 
-      {/* Banner */}
-      <Image
-        source={require("@/assets/images/banner.png")}
-        className="w-full h-40 rounded-xl mb-5"
-        resizeMode="cover"
-      />
+      {/* Banner Carousel */}
+      <BannerCarousel />
 
       {/* Categories */}
       <Text className="text-2xl font-poppins-medium mb-3">Kategori</Text>
