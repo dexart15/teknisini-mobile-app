@@ -50,7 +50,7 @@ export default function OrderDetailScreen() {
     <View className="flex-1 bg-secondary">
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="bg-white py-12 flex-row items-center border-b border-gray-200">
+        <View className="bg-white pt-12 pb-8 flex-row items-center border-b border-gray-200">
           <TouchableOpacity onPress={() => router.back()} className="px-4 mt-4">
             <Ionicons name="arrow-back" size={24} color="#32A4FF" />
           </TouchableOpacity>
@@ -63,12 +63,14 @@ export default function OrderDetailScreen() {
         <View className="bg-white mt-2 px-5 py-4 rounded-xl mx-4 shadow-sm">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
-              <View className="ml-2">
-                <Text className="font-poppins-semibold text-gray-900">
-              <Ionicons name="location" size={20} color={Colors.primary} />
-                  Alamat Tujuan
-                </Text>
-                <Text className="text-gray-600 text-sm w-[90%]">
+              <View>
+                <View className="items-center flex-row gap-1">
+                  <Ionicons name="location" size={20} color={Colors.primary} />
+                  <Text className="font-poppins-semibold text-gray-900 items-center flex">
+                    Alamat Tujuan
+                  </Text>
+                </View>
+                <Text className="text-gray-600 text-sm w-[90%] pl-6">
                   Jl. Pulau Singkep No. 11, Denpasar Selatan, Bali
                 </Text>
               </View>
@@ -153,12 +155,6 @@ export default function OrderDetailScreen() {
 
         {/* Total */}
         <View className="bg-white mt-3 px-5 py-4 rounded-xl mx-4 shadow-sm mb-28">
-          <View className="flex-row justify-between mb-2 py-2">
-            <Text className="text-sm font-poppins-medium text-grayText">Biaya Transport</Text>
-            <Text className="text-grayText font-poppins-medium">
-              Rp{transportCost.toLocaleString("id-ID")}
-            </Text>
-          </View>
           <View className="flex-col">
             <OrderMenuItem
               title="Metode Pembayaran"
@@ -171,7 +167,14 @@ export default function OrderDetailScreen() {
               onPress={() => console.log('Pilih Voucher')}
             />
           </View>
+          <View className="flex-row items-center justify-between py-4">
+            <Text className="text-sm font-poppins-medium text-grayText">Biaya Transport</Text>
+            <Text className="text-grayText font-poppins-medium">
+              Rp{transportCost.toLocaleString("id-ID")}
+            </Text>
+          </View>
         </View>
+        
       </ScrollView>
 
       {/* Bottom Bar */}
@@ -184,7 +187,20 @@ export default function OrderDetailScreen() {
                 Rp{total.toLocaleString("id-ID")}
             </Text>
         </View>
-        <TouchableOpacity className="bg-primary px-6 py-3 rounded-full">
+        <TouchableOpacity 
+          onPress={() =>
+            router.push({
+              pathname: "/order/success",
+              params: {
+                name: technician.name,
+                category: technician.category,
+                location: technician.location,
+                service: selectedService,
+                total,
+              },
+            })
+          }
+          className="bg-primary px-6 py-3 rounded-full">
           <Text className="text-white font-poppins-semibold text-base">
             Buat Pesanan
           </Text>

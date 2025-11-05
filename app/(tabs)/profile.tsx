@@ -1,9 +1,12 @@
 import ProfileMenuItem from "@/components/ProfileMenuItem";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Image, Text, View } from "react-native";
 
 export default function ProfileScreen() {
+  const router = useRouter();
+  
   return (
     <View className="flex-1 bg-secondary">
       {/* Header */}
@@ -39,7 +42,7 @@ export default function ProfileScreen() {
         <ProfileMenuItem title="Pesanan Saya" />
         <ProfileMenuItem title="Teknisi Favorit" />
         <ProfileMenuItem title="Ubah Kata Sandi" />
-        <ProfileMenuItem title="Logout" />
+        <ProfileMenuItem title="Logout" onPress={() => router.push("/login")} />
       </View>
     </View>
   );
