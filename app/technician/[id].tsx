@@ -83,9 +83,11 @@ export default function TechnicianDetailScreen() {
 
       {/* Bottom button */}
       <View className="absolute bottom-0 w-full px-6 pt-4 pb-12 bg-white">
-      <TouchableOpacity className="bg-primary py-4 rounded-full">
-        <Text className="text-center text-white font-poppins-semibold text-[16px]"
+      <TouchableOpacity className="bg-primary py-4 rounded-full"
+        onPress={() => router.push(`/order/detail?id=${id}`)}
         
+      >
+        <Text className="text-center text-white font-poppins-semibold text-[16px]"
         >
           Pesan Sekarang
         </Text>
