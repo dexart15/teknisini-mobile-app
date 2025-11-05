@@ -2,6 +2,8 @@ import BannerCarousel from "@/components/BannerCarousel";
 import CategoryItem from "@/components/CategoryItem";
 import ProfileHeader from "@/components/ProfileHeader";
 import TechnicianCard from "@/components/TechnicianCard";
+import { technicians } from "@/data/technicians";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 
@@ -13,38 +15,40 @@ const categories = [
   { id: 5, name: 'Otomotif', iconName: 'car-sport' as const },
 ];
 
-const technicians = [
-  {
-    id: 1,
-    name: "Mahendra Saputra",
-    category: "Kelistrikan",
-    location: "Denpasar, Bali",
-    image: require("@/assets/images/tech1.jpg"),
-  },
-  {
-    id: 2,
-    name: "Wahyu Dwi Putra",
-    category: "Komputer",
-    location: "Gianyar, Bali",
-    image: require("@/assets/images/tech2.jpg"),
-  },
-  {
-    id: 3,
-    name: "Gede Mahesa",
-    category: "Elektronik",
-    location: "Badung, Bali",
-    image: require("@/assets/images/tech3.jpg"),
-  },
-  {
-    id: 4,
-    name: "Githa Amyguna",
-    category: "Jaringan",
-    location: "Denpasar, Bali",
-    image: require("@/assets/images/tech4.jpg"),
-  },
-];
+// const technicians = [
+//   {
+//     id: 1,
+//     name: "Mahendra Saputra",
+//     category: "Kelistrikan",
+//     location: "Denpasar, Bali",
+//     image: require("@/assets/images/tech1.jpg"),
+//   },
+//   {
+//     id: 2,
+//     name: "Wahyu Dwi Putra",
+//     category: "Komputer",
+//     location: "Gianyar, Bali",
+//     image: require("@/assets/images/tech2.jpg"),
+//   },
+//   {
+//     id: 3,
+//     name: "Gede Mahesa",
+//     category: "Elektronik",
+//     location: "Badung, Bali",
+//     image: require("@/assets/images/tech3.jpg"),
+//   },
+//   {
+//     id: 4,
+//     name: "Githa Amyguna",
+//     category: "Jaringan",
+//     location: "Denpasar, Bali",
+//     image: require("@/assets/images/tech4.jpg"),
+//   },
+// ];
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
 
@@ -83,13 +87,13 @@ export default function HomeScreen() {
       </Text>
 
       <View className="flex-row flex-wrap justify-between">
-        {technicians.map((tech) => (
+        {technicians.map((tech) => (  
           <TechnicianCard
             key={tech.id}
             {...tech}
             isFavorite={favorites.includes(tech.id)}
             onToggleFavorite={toggleFavorite}
-          />
+            />
         ))}
       </View>
     </ScrollView>

@@ -29,10 +29,9 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       {/* Login Button */}
-      <TouchableOpacity className="bg-primary py-3 rounded-full mt-6">
-        <Text className="text-center text-white font-poppins-bold text-[16px]"
-        onPress={() => router.replace("/(tabs)/home")}
-        >
+      <TouchableOpacity className="bg-primary py-3 rounded-full mt-6"
+        onPress={() => router.replace("/(tabs)/home")}>
+        <Text className="text-center text-white font-poppins-bold text-[16px]">
           Masuk
         </Text>
       </TouchableOpacity>
