@@ -39,8 +39,8 @@ export default function ProfileScreen() {
           Akun Saya
         </Text>
 
-        <ProfileMenuItem title="Pesanan Saya" />
-        <ProfileMenuItem title="Teknisi Favorit" />
+        <ProfileMenuItem title="Pesanan Saya" onPress={() => router.push("/orders" as any)}    />
+        <ProfileMenuItem title="Teknisi Favorit" onPress={() => router.push("/(tabs)/favorite")} />
         <ProfileMenuItem title="Ubah Kata Sandi" />
         <ProfileMenuItem title="Logout" onPress={() => router.push("/login")} />
       </View>
