@@ -1,20 +1,26 @@
-# Welcome to your Expo app 👋
+# TeknisiNi Mobile App 🔧
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplikasi mobile untuk booking teknisi profesional, dibangun dengan Expo dan React Native dengan Firebase sebagai backend.
 
-## Get started
+## 🚀 Quick Start
 
-1. Install dependencies
+### 1. Install Dependencies
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-2. Start the app
+### 2. Setup Firebase
 
-   ```bash
-   npx expo start
-   ```
+File konfigurasi Firebase sudah tersedia di `.env`. Pastikan semua kredensial sudah terisi dengan benar.
+
+Lihat [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) untuk panduan lengkap setup Firebase.
+
+### 3. Start the App
+
+```bash
+npx expo start
+```
 
 In the output, you'll find options to open the app in a
 

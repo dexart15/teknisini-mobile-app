@@ -5,13 +5,15 @@ import React from "react";
 import { Image, Text, TouchableOpacity } from "react-native";
 
 interface TechnicianCardProps {
-  id: number;
+  id: string | number;
   name: string;
   category: string;
   location: string;
   image: any;
+  rating?: number;
+  price?: number;
   isFavorite: boolean;
-  onToggleFavorite: (id: number) => void;
+  onToggleFavorite: () => void;
 }
 
 const TechnicianCard: React.FC<TechnicianCardProps> = ({
@@ -20,6 +22,8 @@ const TechnicianCard: React.FC<TechnicianCardProps> = ({
   category,
   location,
   image,
+  rating,
+  price,
   isFavorite,
   onToggleFavorite,
 }) => {
@@ -29,13 +33,11 @@ const TechnicianCard: React.FC<TechnicianCardProps> = ({
     <TouchableOpacity
       activeOpacity={0.8}
       className="w-[48%] bg-white p-3 rounded-2xl mb-4 shadow-sm items-center"
-      onPress={() =>
-        router.push(`/technician/${id}?name=${name}&category=${category}&location=${location}&image=${image}`)
-      }
+      onPress={() => router.push(`/technician/${id}` as any)}
     >
       <TouchableOpacity
         className="absolute right-3 top-3 z-10"
-        onPress={() => onToggleFavorite(id)}
+        onPress={onToggleFavorite}
       >
         <Ionicons
           name={isFavorite ? "heart" : "heart-outline"}
