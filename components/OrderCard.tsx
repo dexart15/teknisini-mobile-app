@@ -24,6 +24,7 @@ interface OrderCardProps {
   status: "pending" | "confirmed" | "in-progress" | "completed" | "cancelled";
   address: string;
   notes?: string;
+  hasRating?: boolean;
   onStatusChange?: () => void;
 }
 
@@ -39,6 +40,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
   totalPrice,
   status,
   address,
+  hasRating = false,
   onStatusChange,
 }) => {
   const router = useRouter();
@@ -157,7 +159,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
       return (
         <View className="flex-row justify-end gap-3">
           <TouchableOpacity
-            className="border border-grayText px-3 py-2 rounded-lg"
+            className={`border ${hasRating ? 'border-primary' : 'border-grayText'} px-3 py-2 rounded-lg`}
             onPress={() =>
               router.push({
                 pathname: "/technician/[id]",
@@ -165,19 +167,21 @@ const OrderCard: React.FC<OrderCardProps> = ({
               })
             }
           >
-            <Text className="text-grayText">Pesan Lagi</Text>
+            <Text className={hasRating ? 'text-primary' : 'text-grayText'}>Pesan Lagi</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            className="border border-primary px-3 py-2 rounded-lg"
-            onPress={() =>
-              router.push({
-                pathname: "/orders/[id]",
-                params: { id: id },
-              })
-            }
-          >
-            <Text className="text-primary">Nilai</Text>
-          </TouchableOpacity>
+          {!hasRating && (
+            <TouchableOpacity
+              className="border border-primary px-3 py-2 rounded-lg"
+              onPress={() =>
+                router.push({
+                  pathname: "/orders/[id]",
+                  params: { id: id },
+                })
+              }
+            >
+              <Text className="text-primary">Nilai</Text>
+            </TouchableOpacity>
+          )}
         </View>
       );
     }
@@ -204,7 +208,7 @@ const OrderCard: React.FC<OrderCardProps> = ({
   };
 
   return (
-    <View className="bg-white p-4 rounded-xl mb-4 shadow">
+    <View className="bg-white p-4 rounded-xl mb-4 shadow-sm">
       <Text className="text-primary text-[11px] font-poppins-medium text-right">
         {getStatusText()}
       </Text>

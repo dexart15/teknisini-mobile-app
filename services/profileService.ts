@@ -1,9 +1,9 @@
 import { auth } from "@/config/firebase.config";
 import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword,
-  updateProfile,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword,
+    updateProfile
 } from "firebase/auth";
 import { updateDocument } from "./firestoreService";
 
@@ -96,5 +96,47 @@ export const getUserProfile = async (userId: string) => {
     }
   } catch (error: any) {
     return { success: false, error: error.message };
+  }
+};
+
+// Send email update verification link
+export const sendEmailUpdateLink = async (
+  newEmail: string,
+  currentPassword: string
+) => {
+  try {
+    if (!auth.currentUser || !auth.currentUser.email) {
+      return { success: false, error: "User not logged in" };
+    }
+
+    // Re-authenticate user terlebih dahulu
+    const credential = EmailAuthProvider.credential(
+      auth.currentUser.email,
+      currentPassword
+    );
+
+    await reauthenticateWithCredential(auth.currentUser, credential);
+
+    // Send verification email to new email address
+    await verifyBeforeUpdateEmail(auth.currentUser, newEmail);
+
+    return { success: true };
+  } catch (error: any) {
+    let errorMessage = "Terjadi kesalahan saat mengirim email verifikasi";
+
+    if (
+      error.code === "auth/invalid-credential" ||
+      error.code === "auth/wrong-password"
+    ) {
+      errorMessage = "Password salah";
+    } else if (error.code === "auth/invalid-email") {
+      errorMessage = "Format email baru tidak valid";
+    } else if (error.code === "auth/email-already-in-use") {
+      errorMessage = "Email sudah digunakan oleh akun lain";
+    } else if (error.code === "auth/requires-recent-login") {
+      errorMessage = "Silakan login ulang sebelum mengubah email";
+    }
+
+    return { success: false, error: errorMessage };
   }
 };

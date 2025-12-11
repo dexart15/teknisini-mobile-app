@@ -1,8 +1,9 @@
 import BannerCarousel from "@/components/BannerCarousel";
 import CategoryItem from "@/components/CategoryItem";
+import OrderCard from "@/components/OrderCard";
 import ProfileHeader from "@/components/ProfileHeader";
-import SearchInput from "@/components/SearchInput";
 import TechnicianCard from "@/components/TechnicianCard";
+import { Booking, getUserBookings } from "@/services/bookingService";
 import {
   getFavoriteTechnicianIds,
   toggleFavorite as toggleFavoriteService,
@@ -67,6 +68,7 @@ export default function HomeScreen() {
   const [filteredTechnicians, setFilteredTechnicians] = useState<Technician[]>(
     []
   );
+  const [activeBookings, setActiveBookings] = useState<Booking[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -76,6 +78,7 @@ export default function HomeScreen() {
     loadTechnicians();
     if (user) {
       loadFavorites();
+      loadActiveBookings();
     }
   }, [user]);
 
@@ -98,6 +101,21 @@ export default function HomeScreen() {
     const result = await getFavoriteTechnicianIds(user.uid);
     if (result.success && result.data) {
       setFavorites(result.data);
+    }
+  };
+
+  const loadActiveBookings = async () => {
+    if (!user) return;
+    const result = await getUserBookings(user.uid);
+    if (result.success && result.data) {
+      // Filter only active bookings (pending, confirmed, in-progress)
+      const active = result.data.filter(
+        (booking) =>
+          booking.status === "pending" ||
+          booking.status === "confirmed" ||
+          booking.status === "in-progress"
+      );
+      setActiveBookings(active);
     }
   };
 
@@ -155,6 +173,7 @@ export default function HomeScreen() {
     await loadTechnicians();
     if (user) {
       await loadFavorites();
+      await loadActiveBookings();
     }
     setRefreshing(false);
   };
@@ -170,14 +189,39 @@ export default function HomeScreen() {
       <ProfileHeader />
 
       {/* Search */}
-      <SearchInput
+      {/* <SearchInput
         placeholder="Cari teknisi, kategori, lokasi..."
         value={searchQuery}
         onChangeText={setSearchQuery}
-      />
+      /> */}
 
       {/* Banner Carousel */}
       <BannerCarousel />
+
+      {/* Active Bookings */}
+      {activeBookings.length > 0 && (
+        <>
+          <Text className="text-2xl font-poppins-medium mb-3">
+            Pesanan Berlangsung
+          </Text>
+          {activeBookings.map((booking) => (
+            <OrderCard
+              key={booking.id}
+              id={booking.id}
+              technicianId={booking.technicianId}
+              technicianName={booking.technicianName}
+              technicianPhoto={booking.technicianPhotoURL}
+              service={booking.service}
+              scheduledDate={booking.scheduledDate}
+              scheduledTime={booking.scheduledTime}
+              price={booking.price}
+              status={booking.status}
+              address={booking.address}
+              onStatusChange={loadActiveBookings}
+            />
+          ))}
+        </>
+      )}
 
       {/* Categories */}
       <Text className="text-2xl font-poppins-medium mb-3">Kategori</Text>
@@ -199,11 +243,14 @@ export default function HomeScreen() {
         <Text className="text-2xl font-poppins-medium">
           {selectedCategory ? `${selectedCategory}` : "Teknisi Terbaik"}
         </Text>
-        {filteredTechnicians.length > 0 && (
+
+        {/* Teks jumlah teknisi */}
+        {/* {filteredTechnicians.length > 0 && (
           <Text className="text-sm font-poppins text-gray-500">
             {filteredTechnicians.length} teknisi
           </Text>
-        )}
+        )} */}
+
       </View>
 
       {loading ? (
@@ -223,24 +270,27 @@ export default function HomeScreen() {
         </View>
       ) : (
         <View className="flex-row flex-wrap justify-between pb-5">
-          {filteredTechnicians.map((tech) => (
-            <TechnicianCard
-              key={tech.id}
-              id={tech.id}
-              name={tech.name}
-              category={tech.category}
-              location={tech.location}
-              image={
-                tech.photoURL
-                  ? { uri: tech.photoURL }
-                  : require("@/assets/images/avatar.jpg")
-              }
-              rating={tech.rating}
-              price={tech.price}
-              isFavorite={favorites.includes(tech.id)}
-              onToggleFavorite={() => handleToggleFavorite(tech.id)}
-            />
-          ))}
+          {filteredTechnicians
+            .sort((a, b) => b.rating - a.rating) // Sort by rating descending
+            .slice(0, 6) // Show only top 6
+            .map((tech) => (
+              <TechnicianCard
+                key={tech.id}
+                id={tech.id}
+                name={tech.name}
+                category={tech.category}
+                location={tech.location}
+                image={
+                  tech.photoURL
+                    ? { uri: tech.photoURL }
+                    : require("@/assets/images/avatar.jpg")
+                }
+                rating={tech.rating}
+                price={tech.price}
+                isFavorite={favorites.includes(tech.id)}
+                onToggleFavorite={() => handleToggleFavorite(tech.id)}
+              />
+            ))}
         </View>
       )}
     </ScrollView>

@@ -155,6 +155,7 @@ export default function OrdersScreen() {
             <OrderCard
               key={booking.id}
               {...booking}
+              hasRating={!!booking.rating}
               onStatusChange={loadBookings}
             />
           ))

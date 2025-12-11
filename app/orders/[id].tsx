@@ -7,10 +7,15 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 
 interface Booking {
@@ -149,73 +154,92 @@ export default function RatingScreen() {
   }
 
   return (
-    <View className="flex-1 bg-secondary">
-      <View className="bg-white pt-12 pb-8 flex-row items-center border-gray-200">
-        <TouchableOpacity onPress={() => router.back()} className="px-4 mt-4">
-          <Ionicons name="arrow-back" size={24} color="#32A4FF" />
-        </TouchableOpacity>
-        <Text className="ml-[5.5rem] mt-4 text-2xl font-poppins-bold text-black">
-          Pesanan Saya
-        </Text>
-      </View>
-
-      {/* Technician */}
-      <View className="bg-white rounded-xl p-4 m-5 shadow">
-        <View className="flex-row items-center">
-          <Image
-            source={{ uri: technician.photo }}
-            className="w-14 h-14 rounded-full mr-3"
-          />
-          <View>
-            <Text className="font-poppins-medium">{technician.name}</Text>
-            <Text className="text-gray-500 text-[12px]">
-              {booking.serviceName}
+    <KeyboardAvoidingView 
+      className="flex-1 bg-secondary"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View className="flex-1">
+          <View className="bg-white pt-12 pb-8 flex-row items-center border-gray-200">
+            <TouchableOpacity onPress={() => router.back()} className="px-4 mt-4">
+              <Ionicons name="arrow-back" size={24} color="#32A4FF" />
+            </TouchableOpacity>
+            <Text className="ml-[5.5rem] mt-4 text-2xl font-poppins-bold text-black">
+              Pesanan Saya
             </Text>
           </View>
-        </View>
 
-        {/* Rating */}
-        <Text className="mt-4 mb-2 text-gray-800 font-poppins">
-          Nilai Layanan
-        </Text>
-        <View className="flex-row mb-3 gap-1">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <TouchableOpacity key={i} onPress={() => setRating(i)}>
-              <Ionicons
-                name={i <= rating ? "star" : "star-outline"}
-                size={32}
-                color="#FFD700"
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Technician */}
+            <View className="bg-white rounded-xl p-4 m-5 shadow">
+              <View className="flex-row items-center">
+                <Image
+                  source={{ uri: technician.photo }}
+                  className="w-14 h-14 rounded-full mr-3"
+                />
+                <View>
+                  <Text className="font-poppins-medium">{technician.name}</Text>
+                  <Text className="text-gray-500 text-[12px]">
+                    {booking.serviceName}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Rating */}
+              <Text className="mt-4 mb-2 text-gray-800 font-poppins">
+                Nilai Layanan
+              </Text>
+              <View className="flex-row mb-3 gap-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <TouchableOpacity key={i} onPress={() => setRating(i)}>
+                    <Ionicons
+                      name={i <= rating ? "star" : "star-outline"}
+                      size={32}
+                      color="#FFD700"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Review */}
+              <Text className="mt-2 mb-2 text-gray-800 font-poppins">
+                Tulis ulasan minimal 10 karakter
+              </Text>
+              <TextInput
+                className="bg-gray-100 rounded-xl p-3 h-[25rem] mb-6"
+                multiline
+                value={review}
+                onChangeText={setReview}
+                textAlignVertical="top"
+                returnKeyType="done"
+                blurOnSubmit={true}
               />
+            </View>
+
+            {/* Spacer for bottom button */}
+            <View className="h-24" />
+          </ScrollView>
+
+          {/* Bottom button */}
+          <View className="absolute bottom-0 w-full px-6 pt-4 pb-12 bg-white">
+            <TouchableOpacity
+              className="bg-primary py-3 rounded-full items-center"
+              onPress={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text className="text-white font-poppins-medium">Kirim</Text>
+              )}
             </TouchableOpacity>
-          ))}
+          </View>
         </View>
-
-        {/* Review */}
-        <Text className="mt-2 mb-2 text-gray-800 font-poppins">
-          Tulis ulasan minimal 10 karakter
-        </Text>
-        <TextInput
-          className="bg-gray-100 rounded-xl p-3 h-[25rem] mb-6"
-          multiline
-          value={review}
-          onChangeText={setReview}
-        />
-      </View>
-
-      {/* Bottom button */}
-      <View className="absolute bottom-0 w-full px-6 pt-4 pb-12 bg-white">
-        <TouchableOpacity
-          className="bg-primary py-3 rounded-full items-center"
-          onPress={handleSubmit}
-          disabled={submitting}
-        >
-          {submitting ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text className="text-white font-poppins-medium">Kirim</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

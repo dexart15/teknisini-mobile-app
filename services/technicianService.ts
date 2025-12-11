@@ -1,17 +1,17 @@
 import { db } from "@/config/firebase.config";
 import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  QueryConstraint,
-  updateDoc,
-  where,
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    QueryConstraint,
+    updateDoc,
+    where,
 } from "firebase/firestore";
 
 export interface Technician {
@@ -161,6 +161,42 @@ export const filterTechnicians = async (filters: {
 
     return { success: true, data: technicians };
   } catch (error: any) {
+    console.error("filterTechnicians error:", error.message);
+    
+    // Fallback: Get all technicians and filter client-side if index not available
+    try {
+      const allResult = await getAllTechnicians();
+      if (allResult.success && allResult.data) {
+        let technicians = allResult.data;
+        
+        // Apply filters client-side
+        if (filters.available !== undefined) {
+          technicians = technicians.filter((tech) => tech.available === filters.available);
+        }
+        if (filters.category) {
+          technicians = technicians.filter((tech) => tech.category === filters.category);
+        }
+        if (filters.minRating) {
+          technicians = technicians.filter((tech) => tech.rating >= filters.minRating!);
+        }
+        if (filters.maxPrice) {
+          technicians = technicians.filter((tech) => tech.price <= filters.maxPrice!);
+        }
+        if (filters.location) {
+          technicians = technicians.filter((tech) =>
+            tech.location.toLowerCase().includes(filters.location!.toLowerCase())
+          );
+        }
+        
+        // Sort by rating
+        technicians.sort((a, b) => b.rating - a.rating);
+        
+        return { success: true, data: technicians };
+      }
+    } catch (fallbackError) {
+      console.error("Fallback also failed:", fallbackError);
+    }
+    
     return { success: false, error: error.message };
   }
 };

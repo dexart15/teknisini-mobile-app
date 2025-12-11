@@ -1,6 +1,6 @@
 // app/login.tsx
 import FormInput from "@/components/FormInput";
-import { login } from "@/services/authService";
+import { isEmailVerified, login } from "@/services/authService";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -29,6 +29,21 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (result.success) {
+      // Skip verifikasi untuk admin
+      const isAdmin = email.trim().toLowerCase() === "admin@admin.com";
+      
+      // Cek apakah email sudah diverifikasi (kecuali admin)
+      if (!isAdmin && !isEmailVerified()) {
+        Alert.alert(
+          "Email Belum Diverifikasi",
+          "Silakan verifikasi email Anda terlebih dahulu untuk melanjutkan.",
+          [
+            { text: "Verifikasi Email", onPress: () => router.replace("/verify-email") },
+          ]
+        );
+        return;
+      }
+      
       Alert.alert("Sukses", "Login berhasil!", [
         { text: "OK", onPress: () => router.replace("/(tabs)/home") },
       ]);
@@ -74,8 +89,11 @@ export default function LoginScreen() {
       />
 
       {/* Forgot Password */}
-      <TouchableOpacity className="items-end mt-2">
-        <Text className="text-[13px] text-primary font-poppins-medium">
+      <TouchableOpacity 
+        className="items-end mt-2"
+        onPress={() => router.push("/forgot-password")}
+      >
+        <Text className="text-[13px] text-primary font-poppins-semibold">
           Lupa Kata Sandi
         </Text>
       </TouchableOpacity>

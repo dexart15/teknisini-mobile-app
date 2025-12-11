@@ -6,12 +6,12 @@ import { Link, useRouter } from "expo-router";
 import { doc, setDoc } from "firebase/firestore";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function SignUpScreen() {
@@ -46,6 +46,7 @@ export default function SignUpScreen() {
       try {
         await setDoc(doc(db, "users", result.user.uid), {
           email: result.user.email,
+          emailVerified: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -54,9 +55,11 @@ export default function SignUpScreen() {
       }
 
       setLoading(false);
-      Alert.alert("Sukses", "Akun berhasil dibuat!", [
-        { text: "OK", onPress: () => router.replace("/(tabs)/home") },
-      ]);
+      // Redirect ke halaman verifikasi email
+      router.replace({
+        pathname: "/verify-email",
+        params: { email: result.user.email },
+      });
     } else {
       setLoading(false);
       let errorMessage = "Terjadi kesalahan saat membuat akun";

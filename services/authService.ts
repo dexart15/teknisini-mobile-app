@@ -1,11 +1,12 @@
 import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-  User,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    sendEmailVerification,
+    sendPasswordResetEmail,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile,
+    User,
 } from "firebase/auth";
 import { auth } from "../config/firebase.config";
 
@@ -27,7 +28,43 @@ export const signUp = async (
       await updateProfile(userCredential.user, { displayName });
     }
 
+    // Kirim email verifikasi
+    if (userCredential.user) {
+      await sendEmailVerification(userCredential.user);
+    }
+
     return { success: true, user: userCredential.user };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
+
+// Kirim ulang email verifikasi
+export const resendVerificationEmail = async () => {
+  try {
+    if (!auth.currentUser) {
+      return { success: false, error: "User not logged in" };
+    }
+    await sendEmailVerification(auth.currentUser);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
+
+// Cek apakah email sudah diverifikasi
+export const isEmailVerified = () => {
+  return auth.currentUser?.emailVerified || false;
+};
+
+// Reload user untuk update status verifikasi
+export const reloadUser = async () => {
+  try {
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+      return { success: true, user: auth.currentUser };
+    }
+    return { success: false, error: "User not logged in" };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

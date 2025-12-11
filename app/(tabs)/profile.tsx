@@ -29,6 +29,21 @@ export default function ProfileScreen() {
     }
   }, [user?.photoURL]);
 
+  // Fungsi untuk mendapatkan inisial dari displayName
+  const getInitials = (name: string): string => {
+    const cleanName = name.trim();
+    if (cleanName.length === 0) return "U";
+    
+    // Ambil huruf pertama dan terakhir
+    const firstChar = cleanName[0].toUpperCase();
+    const lastChar = cleanName[cleanName.length - 1].toUpperCase();
+    
+    return firstChar + lastChar;
+  };
+
+  const displayName = user?.displayName || user?.email?.split("@")[0] || "User";
+  const initials = getInitials(displayName);
+
   const pickImage = async () => {
     try {
       // Request permission
@@ -109,10 +124,10 @@ export default function ProfileScreen() {
   return (
     <ScrollView className="flex-1 bg-secondary">
       {/* Header */}
-      <View className="bg-primary h-48 px-6 flex-row items-center justify-between pt-16">
+      <View className="bg-primary h-44 px-6 flex-row items-center justify-between pt-12">
         <View>
-          <Text className="text-white text-xl font-poppins-semibold">
-            {user?.email?.split("@")[0] || "User"}
+          <Text className="text-white text-xl font-poppins-semibold capitalize">
+            {displayName}
           </Text>
           <View className="flex-row items-center mt-1">
             <Ionicons name="mail" size={16} color="white" />
@@ -122,17 +137,21 @@ export default function ProfileScreen() {
           </View>
         </View>
         <View className="relative">
-          <Image
-            source={
-              profileImage
-                ? { uri: profileImage }
-                : require("@/assets/images/avatar.jpg")
-            }
-            className="w-16 h-16 rounded-full border-2 border-white"
-          />
+          {profileImage ? (
+            <Image
+              source={{ uri: profileImage }}
+              className="w-16 h-16 rounded-full border-2 border-white"
+            />
+          ) : (
+            <View className="w-16 h-16 rounded-full border-2 border-white bg-white items-center justify-center">
+              <Text className="text-primary text-xl font-poppins-semibold">
+                {initials}
+              </Text>
+            </View>
+          )}
           <TouchableOpacity
-            className="absolute bottom-0 right-0 bg-white p-1 rounded-full"
-            onPress={pickImage}
+            className="absolute bottom-0 right-0 bg-white shadow-black shadow-sm p-1 rounded-full"
+            onPress={() => router.push("/edit-profile" as any)}
             disabled={uploading}
           >
             {uploading ? (

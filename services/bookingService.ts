@@ -1,13 +1,13 @@
 import { db } from "@/config/firebase.config";
 import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    query,
+    updateDoc,
+    where,
 } from "firebase/firestore";
 
 export type BookingStatus =
@@ -114,8 +114,13 @@ export const createBooking = async (
   bookingData: Omit<Booking, "id" | "createdAt" | "updatedAt">
 ) => {
   try {
+    // Remove undefined fields to prevent Firestore errors
+    const cleanedData = Object.fromEntries(
+      Object.entries(bookingData).filter(([_, value]) => value !== undefined)
+    );
+
     const docRef = await addDoc(collection(db, "bookings"), {
-      ...bookingData,
+      ...cleanedData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -197,6 +202,32 @@ export const getOngoingBookings = async (userId: string) => {
 export const getCompletedBookings = async (userId: string) => {
   try {
     return await getBookingsByStatus(userId, "completed");
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+};
+
+// Get bookings by technician ID
+export const getBookingsByTechnicianId = async (technicianId: string) => {
+  try {
+    const q = query(
+      collection(db, "bookings"),
+      where("technicianId", "==", technicianId)
+    );
+    const querySnapshot = await getDocs(q);
+    const bookings = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Booking[];
+
+    // Sort by creation date
+    bookings.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA; // desc order
+    });
+
+    return { success: true, data: bookings };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

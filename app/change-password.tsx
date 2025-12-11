@@ -71,11 +71,11 @@ export default function ChangePasswordScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="h-32 px-6 pt-16 pb-6 bg-primary">
-          <View className="flex-row items-center">
+          <View className="flex-row  items-center">
             <TouchableOpacity onPress={() => router.back()} className="mr-4">
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
-            <Text className="text-xl text-white font-poppins-semibold">
+            <Text className="text-xl pl-[5.5rem] text-white font-poppins-semibold">
               Ubah Kata Sandi
             </Text>
           </View>
@@ -93,6 +93,16 @@ export default function ChangePasswordScreen() {
             value={currentPassword}
             onChangeText={setCurrentPassword}
           />
+
+          {/* Forgot Password Link */}
+          <TouchableOpacity 
+            className="items-end mt-2 mb-4"
+            onPress={() => router.push("/forgot-password")}
+          >
+            <Text className="text-[13px] text-primary font-poppins-semibold">
+              Lupa Password Lama?
+            </Text>
+          </TouchableOpacity>
 
           <FormInput
             placeholder="Password Baru"

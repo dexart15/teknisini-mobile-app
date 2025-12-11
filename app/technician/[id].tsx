@@ -1,6 +1,8 @@
 import IconActionButton from "@/components/IconActionButton";
 import ReviewCard from "@/components/ReviewCard";
+import { getBookingsByTechnicianId } from "@/services/bookingService";
 import { isFavorite, toggleFavorite } from "@/services/favoriteService";
+import { getUserProfile } from "@/services/profileService";
 import { getTechnicianById, Technician } from "@/services/technicianService";
 import { useAuthStore } from "@/store/authStore";
 import { formatRupiah } from "@/utils/formatRupiah";
@@ -17,6 +19,13 @@ import {
   View,
 } from "react-native";
 
+interface TopReview {
+  userName: string;
+  rating: number;
+  review: string;
+  createdAt: string;
+}
+
 export default function TechnicianDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
@@ -24,6 +33,9 @@ export default function TechnicianDetailScreen() {
   const [technician, setTechnician] = useState<Technician | null>(null);
   const [loading, setLoading] = useState(true);
   const [favorite, setFavorite] = useState(false);
+  const [topReview, setTopReview] = useState<TopReview | null>(null);
+  const [averageRating, setAverageRating] = useState<number>(0);
+  const [reviewCount, setReviewCount] = useState<number>(0);
 
   useEffect(() => {
     loadTechnician();
@@ -46,6 +58,44 @@ export default function TechnicianDetailScreen() {
 
       setTechnician(result.data);
 
+      // Load reviews and calculate average rating
+      const bookingsResult = await getBookingsByTechnicianId(id as string);
+      if (bookingsResult.success && bookingsResult.data) {
+        const bookingsWithReviews = bookingsResult.data
+          .filter((booking) => booking.rating && booking.review)
+          .sort((a, b) => b.rating! - a.rating!); // Sort by rating desc
+
+        if (bookingsWithReviews.length > 0) {
+          // Get user name for top review
+          const topBooking = bookingsWithReviews[0];
+          let userName = "Pengguna";
+          try {
+            const userResult = await getUserProfile(topBooking.userId);
+            if (userResult.success && userResult.data) {
+              const userData = userResult.data as { email?: string };
+              if (userData.email) {
+                userName = userData.email.split("@")[0];
+              }
+            }
+          } catch (e) {
+            console.log("Error fetching user:", e);
+          }
+
+          setTopReview({
+            userName,
+            rating: topBooking.rating!,
+            review: topBooking.review!,
+            createdAt: topBooking.updatedAt,
+          });
+          
+          // Calculate average rating
+          const totalRating = bookingsWithReviews.reduce((sum, b) => sum + b.rating!, 0);
+          const avgRating = totalRating / bookingsWithReviews.length;
+          setAverageRating(avgRating);
+          setReviewCount(bookingsWithReviews.length);
+        }
+      }
+
       if (user) {
         const favResult = await isFavorite(user.uid, id as string);
         if (favResult.success) {
@@ -57,6 +107,27 @@ export default function TechnicianDetailScreen() {
       Alert.alert("Error", "Gagal memuat data teknisi");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMinutes < 1) {
+      return "Baru saja";
+    } else if (diffInHours < 1) {
+      return `${diffInMinutes} menit lalu`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} jam lalu`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays} hari lalu`;
+    } else {
+      return date.toLocaleDateString("id-ID");
     }
   };
 
@@ -117,20 +188,25 @@ export default function TechnicianDetailScreen() {
 
   return (
     <View className="flex-1 bg-[#E6F4FF]">
-      <ScrollView>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View className="bg-primary py-12">
           <View className="flex-row items-center justify-between px-4 mt-4">
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="arrow-back" size={28} color="white" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleToggleFavorite}>
+            
+            {/* Favorite Button */}
+            {/* <TouchableOpacity onPress={handleToggleFavorite}>
               <Ionicons
                 name={favorite ? "heart" : "heart-outline"}
                 size={28}
                 color="white"
               />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+          
           </View>
         </View>
 
@@ -144,21 +220,33 @@ export default function TechnicianDetailScreen() {
             }
             className="w-32 h-32 rounded-full border-2 border-primary bg-white"
           />
-          <Text className="mt-3 text-black text-xl font-poppins-semibold">
+          <Text className="mt-3 text-black text-xl font-poppins-semibold capitalize">
             {technician.name}
           </Text>
           <Text className="text-grayText text-lg font-poppins">
             Teknisi {technician.category}
           </Text>
-          <View className="flex-row items-center mt-2">
-            <Ionicons name="star" size={16} color="#FFD700" />
-            <Text className="ml-1 text-gray-700 font-poppins">
-              {technician.rating?.toFixed(1) || "N/A"}
-            </Text>
-            <Text className="mx-2 text-gray-400">•</Text>
-            <Text className="text-primary font-poppins-semibold">
-              {formatRupiah(technician.price || 0)}/jam
-            </Text>
+          <View className="flex-row items-center mt-1">
+            <View className="flex flex-row items-center gap-0.5 rounded-full px-3 py-1 border-[1.5px] border-grayText/10 bg-white/90">
+              <Text className="text-grayText font-bold font-poppins">
+                {reviewCount > 0 ? averageRating.toFixed(1) : "0.0"}
+              </Text>
+              <Ionicons name="star" size={14} color="#FFD700"/>
+            </View>
+            {/* {reviewCount > 0 && (
+              <Text className="ml-1 text-gray-500 font-poppins text-sm">
+                ({reviewCount} ulasan)
+              </Text>
+            )} */}
+            <Text className="mx-1 text-gray-400"></Text>
+            <View className="flex flex-row items-center gap-0.5 rounded-full px-3 py-1 border-[1.5px] border-grayText/10 bg-white/90">
+              <Text className="text-primary font-poppins-semibold">
+                {formatRupiah(technician.price || 0)}
+                <Text className="text-grayText font-poppins-medium text-xs">
+                  /jam
+                </Text>
+              </Text>
+            </View>
           </View>
           {!technician.available && (
             <View className="bg-red-100 px-4 py-1 rounded-full mt-2">
@@ -177,14 +265,14 @@ export default function TechnicianDetailScreen() {
         </View>
 
         {/* Location */}
-        <View className="px-6 mt-4">
+        {/* <View className="px-6 mt-4">
           <View className="flex-row items-center">
             <Ionicons name="location-outline" size={20} color="#6B7280" />
             <Text className="ml-2 text-gray-700 font-poppins">
               {technician.location}
             </Text>
           </View>
-        </View>
+        </View> */}
 
         {/* Skills */}
         {technician.skills && technician.skills.length > 0 && (
@@ -236,16 +324,34 @@ export default function TechnicianDetailScreen() {
         </View>
 
         {/* Review */}
-        <View className="px-6 mt-4 mb-24">
-          <Text className="text-lg font-[Poppins-SemiBold] text-gray-900 mb-2">
-            Ulasan
-          </Text>
-          <ReviewCard
-            name="Wisnu Caksono"
-            rating={5.0}
-            time="5 jam lalu"
-            review={`${technician.name} adalah teknisi ${technician.category?.toLowerCase() || "profesional"} yang berpengalaman, andal, dan teliti. Selalu memberikan layanan berkualitas tinggi dan aman.`}
-          />
+        <View className="px-6 mt-4 mb-24 pb-12">
+          <View className="flex flex-row justify-between items-center">
+            <Text className="text-lg font-[Poppins-SemiBold] text-gray-900 mb-2">
+              Ulasan
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push(`/review/${id}` as any)}
+            >
+              <Text className="text-primary font-poppins-medium text-sm pb-2">
+                Lihat semua ulasan
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {topReview ? (
+            <ReviewCard
+              name={topReview.userName}
+              rating={topReview.rating}
+              time={getTimeAgo(topReview.createdAt)}
+              review={topReview.review}
+            />
+          ) : (
+            <View className="py-6 items-center">
+              {/* <Ionicons name="chatbubble-outline" size={20} color="#9CA3AF" /> */}
+              <Text className="text-gray-500 font-poppins text-center">
+                Belum ada ulasan
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
