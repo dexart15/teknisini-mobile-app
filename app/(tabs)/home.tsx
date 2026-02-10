@@ -1,18 +1,31 @@
 import BannerCarousel from "@/components/BannerCarousel";
 import CategoryItem from "@/components/CategoryItem";
+import OrderCard from "@/components/OrderCard";
 import ProfileHeader from "@/components/ProfileHeader";
 import TechnicianCard from "@/components/TechnicianCard";
-import { technicians } from "@/data/technicians";
+import { Booking, getUserBookings } from "@/services/bookingService";
+import {
+  getFavoriteTechnicianIds,
+  toggleFavorite as toggleFavoriteService,
+} from "@/services/favoriteService";
+import { getAllTechnicians, Technician } from "@/services/technicianService";
+import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 const categories = [
-  { id: 1, name: 'Kelistrikan', iconName: 'flash' as const },
-  { id: 2, name: 'Elektronik', iconName: 'tv' as const },
-  { id: 3, name: 'Jaringan', iconName: 'wifi' as const },
-  { id: 4, name: 'Komputer', iconName: 'desktop' as const },
-  { id: 5, name: 'Otomotif', iconName: 'car-sport' as const },
+  { id: 1, name: "Kelistrikan", iconName: "flash" as const },
+  { id: 2, name: "Elektronik", iconName: "tv" as const },
+  { id: 3, name: "Jaringan", iconName: "wifi" as const },
+  { id: 4, name: "Komputer", iconName: "desktop" as const },
+  { id: 5, name: "Otomotif", iconName: "car-sport" as const },
 ];
 
 // const technicians = [
@@ -48,54 +61,238 @@ const categories = [
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuthStore();
 
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [filteredTechnicians, setFilteredTechnicians] = useState<Technician[]>(
+    []
+  );
+  const [activeBookings, setActiveBookings] = useState<Booking[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const toggleFavorite = (id: number) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-    );
+  useEffect(() => {
+    loadTechnicians();
+    if (user) {
+      loadFavorites();
+      loadActiveBookings();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    filterTechnicians();
+  }, [selectedCategory, technicians, searchQuery]);
+
+  const loadTechnicians = async () => {
+    setLoading(true);
+    const result = await getAllTechnicians();
+    if (result.success && result.data) {
+      setTechnicians(result.data);
+      setFilteredTechnicians(result.data);
+    }
+    setLoading(false);
+  };
+
+  const loadFavorites = async () => {
+    if (!user) return;
+    const result = await getFavoriteTechnicianIds(user.uid);
+    if (result.success && result.data) {
+      setFavorites(result.data);
+    }
+  };
+
+  const loadActiveBookings = async () => {
+    if (!user) return;
+    const result = await getUserBookings(user.uid);
+    if (result.success && result.data) {
+      // Filter only active bookings (pending, confirmed, in-progress)
+      const active = result.data.filter(
+        (booking) =>
+          booking.status === "pending" ||
+          booking.status === "confirmed" ||
+          booking.status === "in-progress"
+      );
+      setActiveBookings(active);
+    }
+  };
+
+  const filterTechnicians = () => {
+    let filtered = [...technicians];
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter((tech) => tech.category === selectedCategory);
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (tech) =>
+          tech.name.toLowerCase().includes(query) ||
+          tech.category.toLowerCase().includes(query) ||
+          tech.location.toLowerCase().includes(query) ||
+          tech.description.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredTechnicians(filtered);
+  };
+
+  const handleToggleFavorite = async (technicianId: string) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const result = await toggleFavoriteService(user.uid, technicianId);
+    if (result.success) {
+      // Update local state
+      setFavorites((prev) =>
+        prev.includes(technicianId)
+          ? prev.filter((id) => id !== technicianId)
+          : [...prev, technicianId]
+      );
+    }
+  };
+
+  const handleCategorySelect = (categoryId: number) => {
+    const category = categories.find((c) => c.id === categoryId);
+    if (category) {
+      setSelectedCategory(
+        selectedCategory === category.name ? null : category.name
+      );
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadTechnicians();
+    if (user) {
+      await loadFavorites();
+      await loadActiveBookings();
+    }
+    setRefreshing(false);
   };
 
   return (
-    <ScrollView className="flex-1 bg-secondary px-5 pt-16">
+    <ScrollView
+      className="flex-1 bg-secondary px-5 pt-16"
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       {/* Header */}
       <ProfileHeader />
 
+      {/* Search */}
+      {/* <SearchInput
+        placeholder="Cari teknisi, kategori, lokasi..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      /> */}
+
       {/* Banner Carousel */}
       <BannerCarousel />
+
+      {/* Active Bookings */}
+      {activeBookings.length > 0 && (
+        <>
+          <Text className="text-2xl font-poppins-medium mb-3">
+            Pesanan Berlangsung
+          </Text>
+          {activeBookings.map((booking) => (
+            <OrderCard
+              key={booking.id}
+              id={booking.id}
+              technicianId={booking.technicianId}
+              technicianName={booking.technicianName}
+              technicianPhoto={booking.technicianPhotoURL}
+              service={booking.service}
+              scheduledDate={booking.scheduledDate}
+              scheduledTime={booking.scheduledTime}
+              price={booking.price}
+              status={booking.status}
+              address={booking.address}
+              onStatusChange={loadActiveBookings}
+            />
+          ))}
+        </>
+      )}
 
       {/* Categories */}
       <Text className="text-2xl font-poppins-medium mb-3">Kategori</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {categories.map((category) => (
           <CategoryItem
-          key={category.id}
-          id={category.id}
-          name={category.name}
-          iconName={category.iconName}
-          selected={selectedCategory === category.id}
-          onSelect={setSelectedCategory}
+            key={category.id}
+            id={category.id}
+            name={category.name}
+            iconName={category.iconName}
+            selected={selectedCategory === category.name}
+            onSelect={handleCategorySelect}
           />
         ))}
       </ScrollView>
 
       {/* Best Technicians */}
-      <Text className="text-2xl font-poppins-medium mt-6 mb-3">
-        Teknisi Terbaik
-      </Text>
+      <View className="flex-row items-center justify-between mt-6 mb-3">
+        <Text className="text-2xl font-poppins-medium">
+          {selectedCategory ? `${selectedCategory}` : "Teknisi Terbaik"}
+        </Text>
 
-      <View className="flex-row flex-wrap justify-between">
-        {technicians.map((tech) => (  
-          <TechnicianCard
-            key={tech.id}
-            {...tech}
-            isFavorite={favorites.includes(tech.id)}
-            onToggleFavorite={toggleFavorite}
-            />
-        ))}
+        {/* Teks jumlah teknisi */}
+        {/* {filteredTechnicians.length > 0 && (
+          <Text className="text-sm font-poppins text-gray-500">
+            {filteredTechnicians.length} teknisi
+          </Text>
+        )} */}
+
       </View>
+
+      {loading ? (
+        <View className="py-10 items-center">
+          <ActivityIndicator size="large" color="#32A4FF" />
+          <Text className="text-gray-500 font-poppins mt-2">
+            Memuat data...
+          </Text>
+        </View>
+      ) : filteredTechnicians.length === 0 ? (
+        <View className="py-10 items-center">
+          <Text className="text-gray-500 font-poppins text-center">
+            {searchQuery
+              ? "Tidak ada teknisi yang sesuai dengan pencarian"
+              : "Belum ada teknisi tersedia"}
+          </Text>
+        </View>
+      ) : (
+        <View className="flex-row flex-wrap justify-between pb-5">
+          {filteredTechnicians
+            .sort((a, b) => b.rating - a.rating) // Sort by rating descending
+            .slice(0, 6) // Show only top 6
+            .map((tech) => (
+              <TechnicianCard
+                key={tech.id}
+                id={tech.id}
+                name={tech.name}
+                category={tech.category}
+                location={tech.location}
+                image={
+                  tech.photoURL
+                    ? { uri: tech.photoURL }
+                    : require("@/assets/images/avatar.jpg")
+                }
+                rating={tech.rating}
+                price={tech.price}
+                isFavorite={favorites.includes(tech.id)}
+                onToggleFavorite={() => handleToggleFavorite(tech.id)}
+              />
+            ))}
+        </View>
+      )}
     </ScrollView>
   );
 }

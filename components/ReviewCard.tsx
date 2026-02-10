@@ -22,17 +22,25 @@ export default function ReviewCard({ name, time, rating, review, onPress }: Prop
           className="w-10 h-10 rounded-full"
         />
         <View className="ml-2 flex-1">
-          <Text className="font-[Poppins-SemiBold] text-sm">{name}</Text>
-          <View className="flex-row items-center justify-between">
+          <Text className="font-poppins-medium text-base capitalize text-grayText">{name}</Text>
+          <View className="flex-row items-center justify-between pt-1">
             <View className="flex-row items-center">
-            <Ionicons name="star" size={14} color="#FFD700" />
-            <Text className="ml-1 text-gray-600 text-xs">{rating.toFixed(1)}</Text>
+              {/* Render 5 stars based on rating */}
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Ionicons
+                  key={star}
+                  name="star"
+                  size={14}
+                  color={star <= rating ? "#FFD700" : "#D1D5DB"}
+                  className="pe-0.5"
+                />
+              ))}
+              <Text className="text-grayText text-xs ml-2">{time}</Text>
             </View>
-            <Text className="text-grayText text-xs ml-2">{time}</Text>
           </View>
         </View>
       </View>
-      <Text className="text-gray-700 text-sm font-poppins">{review}</Text>
+      <Text className="text-gray-600 font-poppins text-sm">{review}</Text>
     </TouchableOpacity>
   );
 }
